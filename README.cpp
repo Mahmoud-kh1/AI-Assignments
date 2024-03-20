@@ -1,5 +1,5 @@
          Assignment for College
-This project to solve a basic Game calle 8-puzzle which it has 8 numbers and one cell as empty cell ... the goal is to make it ordered in correct order and make 
+This project to solve a basic Game called 8-puzzle which it has 8 numbers and one cell as empty cell ... the goal is to make it ordered in correct order and make 
 the empty cell is the last one 
 ex :  1 2 3
       4 5 *
