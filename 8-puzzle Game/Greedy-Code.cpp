@@ -1,7 +1,8 @@
+#include <iostream>
 #include <bits/stdc++.h>
 using namespace std;
 
-void HOKSHA() {
+void HOOKSHA() {
     ios::sync_with_stdio(0);
     cin.tie(NULL);
     cout.tie(0);
@@ -9,55 +10,59 @@ void HOKSHA() {
     freopen("input.txt", "r", stdin);
     freopen("output.txt", "w", stdout);
 #endif
-
 }
-int dx[]={1,-1,0,0};
-int dy[]={0,0,1,-1};
-// create class to save information about current state like the value of array
-// and parent of it
-#define  all(a)  a.begin() a.end()
+
+int dx[] = {1, -1, 0, 0};
+int dy[] = {0, 0, 1, -1};
+
+#define all(a) a.begin(), a.end()
 
 class Game {
-public: vector<vector<char>>state;
-public : Game* parent = nullptr;
-public: int level = 0, hueris = 0;
 public:
-    Game(){
-        state.resize(3,vector<char>(3));
+    vector<vector<char>> state;
+    Game* parent = nullptr;
+    int level = 0, hueris = 0;
+
+    Game() {
+        state.resize(3, vector<char>(3));
     }
-    void setIntialState(){
+
+    void setInitialState() {
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
-                cin >>  state[i][j];
+                cin >> state[i][j];
     }
-    void getState(){
+
+    void getState() {
         cout << "=================" << endl;
-        for (int i = 0; i < 3; i++){
-            for (int j = 0; j < 3; j++){
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
                 cout << state[i][j] << " ";
             }
             cout << endl;
         }
         cout << "=================" << endl;
     }
-    bool isGoalState(){
-        vector<vector<char>>Goal = {{'1','2','3'},
-                                    {'4','5','6'},
-                                    {'7','8', '*'}};
-        for (int i = 0; i < 3; i++){
-            for (int j = 0 ; j < 3; j++)
+
+    bool isGoalState() {
+        vector<vector<char>> Goal = {{'1', '2', '3'},
+                                     {'4', '5', '6'},
+                                     {'7', '8', '*'}};
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++)
                 if (state[i][j] != Goal[i][j]) return false;
         }
         return true;
     }
-    void printPath(){
+
+    void printPath() {
         cout << "the solution is found by * Greedy search * after :" << level << " operation " << endl;
-        deque<vector<vector<char>>>solution;
+        deque<vector<vector<char>>> solution;
         Game* path = this;
-        while (true){
-            vector<vector<char>>now(3,vector<char>(3));
-            for (int i = 0; i < 3; i++){
-                for (int j = 0; j < 3; j++){
+        while (true) {
+            vector<vector<char>> now(3, vector<char>(3));
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
                     now[i][j] = path->state[i][j];
                 }
             }
@@ -66,9 +71,9 @@ public:
             path = path->parent;
         }
         cout << "=================" << endl;
-        for (int i = 0; i < (int)solution.size(); i++){
-            for (int j = 0; j < 3; j++){
-                for (int k = 0; k < 3; k++){
+        for (int i = 0; i < (int)solution.size(); i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
                     cout << solution[i][j][k] << " ";
                 }
                 cout << endl;
@@ -76,18 +81,20 @@ public:
             cout << "=================" << endl;
         }
     }
-    bool move(int i, int j){
+
+    bool move(int i, int j) {
         return i >= 0 && i < 3 && j >= 0 && j < 3;
     }
-    vector<Game*> valid_Actions(){
+
+    vector<Game*> validActions() {
         vector<Game*> actions;
-        for (int i = 0; i < 3; i++){
-            for (int j = 0; j < 3; j++){
-                if (this->state[i][j] == '*'){
-                    for (int k = 0; k < 4; k++){
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (this->state[i][j] == '*') {
+                    for (int k = 0; k < 4; k++) {
                         int nx = i + dx[k];
                         int ny = j + dy[k];
-                        if (move(nx,ny)){
+                        if (move(nx, ny)) {
                             Game* new_state = new Game(*this);
                             swap(new_state->state[i][j], new_state->state[nx][ny]);
                             actions.push_back(new_state);
@@ -98,65 +105,64 @@ public:
         }
         return actions;
     }
-    int Hueristic() const{
-        vector<vector<char>>Goal = {{'1','2','3'},
-                                    {'4','5','6'},
-                                    {'7','8', '*'}};
-        int cnt = 0;
-        for (int i = 0; i < 3; i++){
-            for (int j = 0; j < 3; j++){
-                if (state[i][j] != Goal[i][j]) cnt ++;
+
+    // Manhattan Distance Heuristic
+    int heuristic() {
+        vector<vector<char>> Goal = {{'1', '2', '3'},
+                                     {'4', '5', '6'},
+                                     {'7', '8', '*'}};
+        int tiles = 0;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+               if (state[i][j] != Goal[i][j]) tiles++;
             }
         }
-        return cnt;
-    }
-    bool operator<(const Game& other) const {
-        return this->Hueristic() < other.Hueristic(); // sort priority qeueu
+        return tiles  ;
     }
 };
 
 bool ok = false;
-void Greedy_8_solver(Game* intial){
-    priority_queue<Game*>q;
-    map<vector<vector<char>>,bool>visted;
-    visted[intial->state] = true;
-    q.push(intial);
-    int n = 0;
-    while (!q.empty()){
-        Game* node = q.top();
-        cout << node->Hueristic() << endl;
-        q.pop();
-        if (node->isGoalState()){
+
+void Greedy_8_solver(Game* initial) {
+    priority_queue<pair<int, Game*>, vector<pair<int, Game*>>, greater<pair<int, Game*>>> pq;
+    map<vector<vector<char>>, int> visited;
+    pq.push({initial->heuristic(), initial});
+    visited[initial->state] = initial->heuristic();
+    while (!pq.empty()) {
+        Game* node = pq.top().second;
+        pq.pop();
+        if (node->isGoalState()) {
             node->printPath();
             ok = true;
-            return void(cout  << "DONE");
+            cout << "DONE" << endl;
+            return;
         }
-        vector<Game*>actions = node->valid_Actions();
-        for (auto i : actions){
-            if (!visted[i->state]) {
-                visted[i->state] = true;
-                i->level = node->level + 1;
-                q.push(i);
+        vector<Game*> actions = node->validActions();
+        for (auto i : actions) {
+            int h = i->heuristic();
+            if (!visited.count(i->state)) {
+                visited[i->state] = 1;
+                // f(N) = H(N) only
+                pq.push({h , i});
                 i->parent = node;
+                i->level = node->level + 1;
             }
         }
-
     }
 }
-signed main() {
-    HOKSHA();
+
+int main() {
+    HOOKSHA();
     int t = 1;
     // cin >> t;
     while (t--) {
-        cout << "Enter the 8 puzzel and make the empty cell * " << endl;
-        Game* intial = new Game();
-        intial->setIntialState();
-         Greedy_8_solver(intial);
+        cout << "Enter the 8 puzzle and make the empty cell * " << endl;
+        Game* initial = new Game();
+        initial->setInitialState();
+        Greedy_8_solver(initial);
         if (!ok)
-            cout << "the puzzel is not solvable" << endl;
-
-
-
+            cout << "the puzzle is not solvable" << endl;
+        delete initial;
     }
     return 0;
 }
